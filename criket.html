@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cricket Score Overlay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: transparent;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            overflow: hidden;
+        }
+        /* ── MAIN WRAPPER ── */
+        
+        .scorebar {
+            width: 100%;
+            max-width: 900px;
+            position: relative;
+            height: 80px;
+            display: flex;
+            align-items: stretch;
+        }
+        /* LEFT TEAM BLOCK */
+        
+        .team-left,
+        .team-right {
+            flex: 1;
+            background: linear-gradient(180deg, #1a2a6c 0%, #0f1a4a 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .team-left {
+            align-items: flex-start;
+            clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 100%, 0 100%);
+            padding-right: 30px;
+        }
+        
+        .team-right {
+            align-items: flex-end;
+            clip-path: polygon(18px 0, 100% 0, 100% 100%, 0 100%);
+            padding-left: 30px;
+        }
+        
+        .team-name {
+            font-family: 'Teko', sans-serif;
+            font-size: 22px;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            line-height: 1;
+        }
+        
+        .team-score {
+            font-family: 'Teko', sans-serif;
+            font-size: 15px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.55);
+            letter-spacing: 1px;
+            line-height: 1.1;
+            margin-top: 2px;
+        }
+        /* CENTER BLOCK */
+        
+        .center-block {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .center-top {
+            background: linear-gradient(180deg, #2244cc 0%, #1a35a8 100%);
+            width: 160px;
+            height: 52px;
+            clip-path: polygon(12px 0%, calc(100% - 12px) 0%, 100% 100%, 0% 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 -2px 12px rgba(30, 80, 220, 0.5);
+        }
+        
+        .score-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .score-num {
+            font-family: 'Teko', sans-serif;
+            font-size: 34px;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+        
+        .score-dash {
+            font-family: 'Teko', sans-serif;
+            font-size: 30px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1;
+        }
+        
+        .center-bottom {
+            background: linear-gradient(180deg, #b0b8cc 0%, #8a94ab 100%);
+            width: 180px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            clip-path: polygon(8px 0%, calc(100% - 8px) 0%, 100% 100%, 0% 100%);
+        }
+        
+        .overs-text {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a2a6c;
+            letter-spacing: 2px;
+        }
+        
+        .bottom-strip-left,
+        .bottom-strip-right {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 26px;
+            background: rgba(255, 255, 255, 0.07);
+            display: flex;
+            align-items: center;
+        }
+        
+        .bottom-strip-left {
+            padding-left: 24px;
+        }
+        
+        .bottom-strip-right {
+            padding-right: 24px;
+            justify-content: flex-end;
+        }
+        
+        .sub-text {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(160, 200, 255, 0.8);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        
+        .team-top {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            height: 54px;
+            width: 100%;
+        }
+        
+        .team-flag {
+            font-size: 22px;
+            line-height: 1;
+        }
+        
+        .team-text {
+            flex: 1;
+        }
+        
+        .team-left .team-top {
+            flex-direction: row;
+        }
+        
+        .team-right .team-top {
+            flex-direction: row-reverse;
+        }
+        
+        .team-right .team-text {
+            text-align: right;
+        }
+        /* ── CONTROL PANEL ── */
+        
+        .ctrl {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            background: rgba(10, 14, 40, 0.93);
+            border: 1px solid rgba(100, 130, 255, 0.2);
+            border-radius: 10px;
+            padding: 16px;
+            width: 290px;
+            z-index: 999;
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .ctrl-title {
+            font-family: 'Teko', sans-serif;
+            font-size: 18px;
+            letter-spacing: 3px;
+            color: #6699ff;
+            text-align: center;
+            border-bottom: 1px solid rgba(100, 130, 255, 0.2);
+            padding-bottom: 8px;
+        }
+        
+        .ctrl label {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 11px;
+            color: rgba(160, 180, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: block;
+            margin-bottom: 3px;
+        }
+        
+        .ctrl input {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(100, 130, 255, 0.2);
+            border-radius: 4px;
+            color: #e0e8ff;
+            padding: 5px 8px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .row2 {
+            display: flex;
+            gap: 6px;
+        }
+        
+        .row2 input {
+            flex: 1;
+        }
+        
+        .apply-btn {
+            background: linear-gradient(135deg, #1a35a8, #2244cc);
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-family: 'Teko', sans-serif;
+            font-size: 18px;
+            letter-spacing: 2px;
+            padding: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+        
+        .apply-btn:hover {
+            opacity: 0.85;
+        }
+        
+        .hide-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: rgba(255, 255, 255, 0.4);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 12px;
+            letter-spacing: 1px;
+            padding: 6px;
+            cursor: pointer;
+            width: 100%;
+            text-transform: uppercase;
+        }
+        
+        .show-btn {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            background: rgba(10, 14, 40, 0.9);
+            border: 1px solid rgba(100, 130, 255, 0.3);
+            border-radius: 6px;
+            color: #6699ff;
+            font-family: 'Teko', sans-serif;
+            font-size: 15px;
+            letter-spacing: 2px;
+            padding: 8px 14px;
+            cursor: pointer;
+            z-index: 998;
+            display: none;
+        }
+        
+        @keyframes flash {
+            0% {
+                transform: scale(1);
+            }
+            40% {
+                transform: scale(1.18);
+                color: #ffe066;
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        .flash {
+            animation: flash 0.4s ease;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="scorebar">
+        <!-- LEFT TEAM -->
+        <div class="team-left">
+            <div class="team-top">
+                <div class="team-flag" id="flag1">🇮🇳</div>
+                <div class="team-text">
+                    <div class="team-name" id="t1name">INDIA</div>
+                    <div class="team-score" id="t1score">187/3 &nbsp;•&nbsp; 18.4 Ov</div>
+                </div>
+            </div>
+            <div class="bottom-strip-left">
+                <span class="sub-text" id="t1sub">BATTING</span>
+            </div>
+        </div>
+
+        <!-- CENTER -->
+        <div class="center-block">
+            <div class="center-top">
+                <div class="score-display">
+                    <span class="score-num" id="runs1">187</span>
+                    <span class="score-dash">-</span>
+                    <span class="score-num" id="runs2">162</span>
+                </div>
+            </div>
+            <div class="center-bottom">
+                <span class="overs-text" id="overInfo">18.4 OV</span>
+            </div>
+        </div>
+
+        <!-- RIGHT TEAM -->
+        <div class="team-right">
+            <div class="team-top">
+                <div class="team-flag" id="flag2">🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
+                <div class="team-text">
+                    <div class="team-name" id="t2name">ENGLAND</div>
+                    <div class="team-score" id="t2score">162/5 &nbsp;•&nbsp; 20.0 Ov</div>
+                </div>
+            </div>
+            <div class="bottom-strip-right">
+                <span class="sub-text" id="t2sub">BOWLING</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTROL PANEL -->
+    <!-- <div class="ctrl" id="ctrlPanel">
+        <div class="ctrl-title">🏏 SCORE CONTROL</div>
+
+        <div>
+            <label>Team 1 Name &amp; Flag</label>
+            <div class="row2">
+                <input id="c_t1name" value="INDIA" style="flex:2">
+                <input id="c_flag1" value="🇮🇳" style="flex:1;text-align:center">
+            </div>
+        </div>
+        <div>
+            <label>T1 Runs / Wickets / Overs</label>
+            <div class="row2">
+                <input id="c_r1" value="187">
+                <input id="c_w1" value="3">
+                <input id="c_o1" value="18.4">
+            </div>
+        </div>
+        <div>
+            <label>Team 1 Lower Text</label>
+            <input id="c_sub1" value="BATTING" style="width:100%">
+        </div>
+
+        <div style="border-top:1px solid rgba(100,130,255,0.15);padding-top:8px;">
+            <label>Team 2 Name &amp; Flag</label>
+            <div class="row2">
+                <input id="c_t2name" value="ENGLAND" style="flex:2">
+                <input id="c_flag2" value="🏴󠁧󠁢󠁥󠁮󠁧󠁿" style="flex:1;text-align:center">
+            </div>
+        </div>
+        <div>
+            <label>T2 Runs / Wickets / Overs</label>
+            <div class="row2">
+                <input id="c_r2" value="162">
+                <input id="c_w2" value="5">
+                <input id="c_o2" value="20.0">
+            </div>
+        </div>
+        <div>
+            <label>Team 2 Lower Text</label>
+            <input id="c_sub2" value="BOWLING" style="width:100%">
+        </div>
+
+        <button class="apply-btn" onclick="applyAll()">✅ APPLY CHANGES</button>
+        <button class="hide-btn" onclick="togglePanel()">Hide Panel (Streaming Mode)</button>
+    </div> -->
+
+    <button class="show-btn" id="showBtn" onclick="togglePanel()">⚙ CONTROLS</button>
+
+    <script>
+        function applyAll() {
+            const r1 = document.getElementById('c_r1').value;
+            const w1 = document.getElementById('c_w1').value;
+            const o1 = document.getElementById('c_o1').value;
+            const r2 = document.getElementById('c_r2').value;
+            const w2 = document.getElementById('c_w2').value;
+            const o2 = document.getElementById('c_o2').value;
+
+            document.getElementById('t1name').textContent = document.getElementById('c_t1name').value.toUpperCase();
+            document.getElementById('t2name').textContent = document.getElementById('c_t2name').value.toUpperCase();
+            document.getElementById('flag1').textContent = document.getElementById('c_flag1').value;
+            document.getElementById('flag2').textContent = document.getElementById('c_flag2').value;
+            document.getElementById('t1score').innerHTML = `${r1}/${w1} &nbsp;•&nbsp; ${o1} Ov`;
+            document.getElementById('t2score').innerHTML = `${r2}/${w2} &nbsp;•&nbsp; ${o2} Ov`;
+            document.getElementById('t1sub').textContent = document.getElementById('c_sub1').value.toUpperCase();
+            document.getElementById('t2sub').textContent = document.getElementById('c_sub2').value.toUpperCase();
+            document.getElementById('overInfo').textContent = `${o1} OV`;
+
+            const n1 = document.getElementById('runs1');
+            const n2 = document.getElementById('runs2');
+            n1.textContent = r1;
+            n2.textContent = r2;
+            n1.classList.remove('flash');
+            void n1.offsetWidth;
+            n1.classList.add('flash');
+            n2.classList.remove('flash');
+            void n2.offsetWidth;
+            n2.classList.add('flash');
+        }
+
+        function togglePanel() {
+            const p = document.getElementById('ctrlPanel');
+            const b = document.getElementById('showBtn');
+            if (p.style.display === 'none') {
+                p.style.display = 'flex';
+                b.style.display = 'none';
+            } else {
+                p.style.display = 'none';
+                b.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+
+</html>
